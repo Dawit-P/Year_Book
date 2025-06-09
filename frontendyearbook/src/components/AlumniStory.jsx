@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 
 const AlumniStory = ({ alumni }) => {
   if (!alumni) {
-    return <div>Loading alumni story...</div>;
+    return <div style={{textAlign: 'center', padding: '20px'}}>Loading alumni story...</div>;
   }
 
   const {
@@ -17,7 +17,7 @@ const AlumniStory = ({ alumni }) => {
   } = alumni;
 
   return (
-    <div style={styles.card}>
+    <div style={styles.card} className="card-base"> {/* Using .card-base */}
       {photo_url && <img src={photo_url} alt={name} style={styles.photo} />}
       <div style={styles.content}>
         <h3 style={styles.name}>{name}</h3>
@@ -57,61 +57,60 @@ AlumniStory.propTypes = {
   }).isRequired,
 };
 
+// Styles simplified, using .card-base and CSS variables
 const styles = {
-  card: {
-    backgroundColor: '#fff',
-    borderRadius: '12px',
-    boxShadow: '0 8px 16px rgba(0,0,0,0.1)',
-    margin: '20px',
-    display: 'flex',
-    flexDirection: 'column',
-    overflow: 'hidden',
-    maxWidth: '600px', // Max width for readability
-    border: '1px solid #e0e0e0',
+  card: { // Specific styles for AlumniStory, complementing .card-base
+    // .card-base provides: backgroundColor, borderRadius, boxShadow, padding, transition
+    // maxWidth: '700px', // Max width for readability, can be handled by page layout too
+    // margin: '20px auto', // Center the card if it's the only one or in a list
+    borderLeft: '5px solid var(--secondary-color)', // Accent color
   },
   photo: {
     width: '100%',
     maxHeight: '350px',
     objectFit: 'cover',
-    borderBottom: '1px solid #eee',
+    borderBottom: '1px solid #eee', // Separator
+    borderRadius: 'var(--border-radius-medium) var(--border-radius-medium) 0 0', // If image is at the top
   },
   content: {
-    padding: '20px 25px',
+    // Padding is handled by .card-base
   },
   name: {
     fontSize: '1.8em',
     fontWeight: 'bold',
-    color: '#1a237e', // Dark blue, professional
+    color: 'var(--primary-color)',
     marginBottom: '5px',
+    fontFamily: 'var(--font-family-serif)',
   },
   position: {
     fontSize: '1.1em',
     fontWeight: '500',
-    color: '#3949ab', // Indigo
+    color: 'var(--tertiary-color)', // Using tertiary for position
     marginBottom: '10px',
   },
   metaInfo: {
     fontSize: '0.95em',
-    color: '#546e7a', // Blue grey
+    color: 'var(--text-color-medium)',
     marginBottom: '15px',
   },
   section: {
     marginBottom: '15px',
   },
   sectionTitle: {
-    fontSize: '1em',
+    fontSize: '1.1em', // Slightly larger section title
     fontWeight: 'bold',
-    color: '#333',
-    marginBottom: '5px',
-    borderBottom: '2px solid #3949ab',
-    paddingBottom: '3px',
+    color: 'var(--text-color-dark)',
+    marginBottom: '8px', // Increased space
+    borderBottom: `2px solid var(--secondary-color)`,
+    paddingBottom: '4px', // Increased padding
     display: 'inline-block',
+    fontFamily: 'var(--font-family-sans-serif)', // Sans-serif for section titles for contrast
   },
   sectionContent: {
-    fontSize: '0.95em',
-    color: '#444',
+    fontSize: '1em', // Slightly larger content text
+    color: 'var(--text-color-medium)',
     lineHeight: '1.7',
-    whiteSpace: 'pre-line', // Respects newlines in the bio/achievement text
+    whiteSpace: 'pre-line',
   },
 };
 

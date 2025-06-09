@@ -1,20 +1,16 @@
 import React, { useState, useEffect } from 'react';
 import { getMemories } from '../services/api';
-import MemoryItemCard from '../components/MemoryItemCard'; // Corrected import name
+import MemoryItemCard from '../components/MemoryItemCard';
 
 const MemoryBoardPage = () => {
   const [memories, setMemories] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  // Placeholder for filter states
-  // const [departmentFilter, setDepartmentFilter] = useState('');
-  // const [typeFilter, setTypeFilter] = useState('');
 
   useEffect(() => {
     const fetchMemories = async () => {
       try {
         setLoading(true);
-        // Add filter params here later: { department: departmentFilter, memory_type: typeFilter }
         const params = {};
         const response = await getMemories(params);
         if (response.data && response.data.results) {
@@ -31,7 +27,7 @@ const MemoryBoardPage = () => {
     };
 
     fetchMemories();
-  }, []); // Add filters to dependency array when implemented: [departmentFilter, typeFilter]
+  }, []);
 
   if (loading) {
     return <div style={styles.message}>Loading memories...</div>;
@@ -46,10 +42,10 @@ const MemoryBoardPage = () => {
   }
 
   return (
-    <div style={styles.container}>
+    <div className="container"> {/* Using .container utility */}
       <h1 style={styles.header}>Memory Board</h1>
       {/* Add filter controls here later */}
-      <div style={styles.timelineContainer}>
+      <div style={styles.listContainer}> {/* Changed from timelineContainer for now */}
         {memories.map(memory => (
           <MemoryItemCard key={memory.id} memory={memory} />
         ))}
@@ -59,44 +55,26 @@ const MemoryBoardPage = () => {
 };
 
 const styles = {
-  container: {
-    padding: '20px',
-    backgroundColor: '#f0f2f5', // Light grey background
-    fontFamily: "'Roboto', sans-serif",
-  },
+  // .container handles padding and max-width
   header: {
     textAlign: 'center',
-    color: '#1a237e', // Deep indigo for header
+    color: 'var(--primary-color)',
     marginBottom: '30px',
-    fontSize: '2.8em',
-    fontWeight: 'bold',
-    textShadow: '1px 1px 2px #c5cae9', // Subtle shadow
+    fontSize: '2.5em',
+    fontFamily: 'var(--font-family-serif)',
+    // textShadow: '1px 1px 2px var(--primary-color-rgb, 0, 51, 102, 0.3)', // Softer shadow
   },
-  // Basic list layout for now, timeline styling can be more complex
-  timelineContainer: {
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'center', // Center cards if they don't take full width
-    gap: '20px',
+  listContainer: { // Simple list layout for now
+    display: 'grid',
+    gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', // Responsive grid
+    gap: '25px',
   },
   message: {
     fontSize: '1.2em',
-    color: '#555',
+    color: 'var(--text-color-medium)',
     textAlign: 'center',
     marginTop: '50px',
   },
-  // Styles for filter controls (to be added later)
-  // filterControls: {
-  //   display: 'flex',
-  //   justifyContent: 'center',
-  //   gap: '20px',
-  //   marginBottom: '30px',
-  // },
-  // filterInput: {
-  //   padding: '10px',
-  //   borderRadius: '5px',
-  //   border: '1px solid #ccc',
-  // }
 };
 
 export default MemoryBoardPage;

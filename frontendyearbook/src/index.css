@@ -1,68 +1,119 @@
+/* Global Styles - index.css */
+
+/* Font Imports (Example: Google Fonts) */
+@import url('https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600;700&family=Merriweather:wght@400;700&family=Roboto:wght@400;500;700&display=swap');
+
+/* CSS Variables for Theme Colors */
 :root {
-  font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
-  line-height: 1.5;
-  font-weight: 400;
+  --primary-color: #003366;
+  --secondary-color: #f39c12;
+  --secondary-color-rgb: 243, 156, 18; /* Added for rgba() */
+  --tertiary-color: #3498db;
+  --tertiary-color: #3498db; /* Bright Blue - Modern, clean (Apple-esque) */
 
-  color-scheme: light dark;
-  color: rgba(255, 255, 255, 0.87);
-  background-color: #242424;
+  --background-color-light: #f4f6f8; /* Light grey for page backgrounds */
+  --background-color-white: #ffffff;
+  --card-bg-color: #ffffff;
 
-  font-synthesis: none;
-  text-rendering: optimizeLegibility;
+  --text-color-dark: #2c3e50; /* Dark blue-grey for primary text */
+  --text-color-medium: #555555; /* Medium grey for secondary text */
+  --text-color-light: #ffffff; /* Light text for dark backgrounds */
+
+  --font-family-sans-serif: 'Open Sans', 'Roboto', sans-serif;
+  --font-family-serif: 'Merriweather', serif; /* For headings or special text */
+
+  --border-radius-small: 4px;
+  --border-radius-medium: 8px;
+  --border-radius-large: 12px;
+
+  --box-shadow-light: 0 2px 5px rgba(0,0,0,0.05);
+  --box-shadow-medium: 0 4px 10px rgba(0,0,0,0.1);
+  --box-shadow-dark: 0 8px 16px rgba(0,0,0,0.1);
+}
+
+/* Reset and Base Styles */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: var(--font-family-sans-serif);
+  line-height: 1.6;
+  color: var(--text-color-dark);
+  background-color: var(--background-color-light);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-family-serif); /* Serif for headings for a classic touch */
+  color: var(--primary-color);
+  line-height: 1.3;
+  margin-bottom: 0.75em;
+}
+
+p {
+  margin-bottom: 1em;
+  color: var(--text-color-medium);
+}
+
 a {
-  font-weight: 500;
-  color: #646cff;
-  text-decoration: inherit;
+  color: var(--tertiary-color);
+  text-decoration: none;
+  transition: color 0.2s ease-in-out;
 }
+
 a:hover {
-  color: #535bf2;
+  color: var(--secondary-color);
 }
 
-body {
-  margin: 0;
-  display: flex;
-  place-items: center;
-  min-width: 320px;
-  min-height: 100vh;
+img {
+  max-width: 100%;
+  height: auto;
+  display: block;
 }
 
-h1 {
-  font-size: 3.2em;
-  line-height: 1.1;
+/* Utility Classes (Optional, but can be helpful) */
+.container {
+  width: 90%;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 20px;
 }
 
-button {
-  border-radius: 8px;
-  border: 1px solid transparent;
-  padding: 0.6em 1.2em;
-  font-size: 1em;
-  font-weight: 500;
-  font-family: inherit;
-  background-color: #1a1a1a;
-  cursor: pointer;
-  transition: border-color 0.25s;
-}
-button:hover {
-  border-color: #646cff;
-}
-button:focus,
-button:focus-visible {
-  outline: 4px auto -webkit-focus-ring-color;
+/* More specific styles for links acting as buttons */
+.button-link {
+  display: inline-block;
+  padding: 10px 20px;
+  background-color: var(--tertiary-color);
+  color: var(--text-color-light);
+  border-radius: var(--border-radius-small);
+  text-align: center;
+  font-weight: 600;
+  transition: background-color 0.3s ease, transform 0.2s ease;
 }
 
-@media (prefers-color-scheme: light) {
-  :root {
-    color: #213547;
-    background-color: #ffffff;
-  }
-  a:hover {
-    color: #747bff;
-  }
-  button {
-    background-color: #f9f9f9;
-  }
+.button-link:hover {
+  background-color: var(--secondary-color);
+  color: var(--text-color-dark); /* Or keep light if contrast is good */
+  transform: translateY(-2px);
+}
+
+/* Basic Card Styling (can be extended by components) */
+.card-base {
+  background-color: var(--card-bg-color);
+  border-radius: var(--border-radius-medium);
+  box-shadow: var(--box-shadow-medium);
+  padding: 20px;
+  margin-bottom: 20px;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.card-base:hover {
+  transform: translateY(-5px);
+  box-shadow: var(--box-shadow-dark);
 }

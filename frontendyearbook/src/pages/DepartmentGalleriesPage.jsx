@@ -15,7 +15,6 @@ const DepartmentGalleriesPage = () => {
         if (response.data && response.data.results) {
           setDepartments(response.data.results);
         } else {
-          // Handle cases where 'results' might be missing, though API seems to provide it
           setDepartments(response.data || []);
         }
       } catch (err) {
@@ -42,7 +41,7 @@ const DepartmentGalleriesPage = () => {
   }
 
   return (
-    <div style={styles.container}>
+    <div className="container"> {/* Using .container utility class */}
       <h1 style={styles.header}>Department Galleries</h1>
       <div style={styles.grid}>
         {departments.map(dept => (
@@ -53,27 +52,25 @@ const DepartmentGalleriesPage = () => {
   );
 };
 
+// Styles are simplified, relying on CSS variables and utility classes
 const styles = {
-  container: {
-    padding: '20px',
-    backgroundColor: '#eef1f5', // A slightly different background for this page
-  },
+  // .container utility class handles overall padding and max-width
   header: {
     textAlign: 'center',
-    color: '#2c3e50',
+    color: 'var(--primary-color)',
     marginBottom: '30px',
     fontSize: '2.5em',
-    fontFamily: "'Helvetica Neue', Helvetica, Arial, sans-serif", // Clean, modern font
+    fontFamily: 'var(--font-family-serif)',
   },
   grid: {
-    display: 'flex',
-    flexWrap: 'wrap',
-    justifyContent: 'center', // Center cards in the grid
-    gap: '20px', // Spacing between cards
+    display: 'grid',
+    // Responsive grid: min 300px width, fill available space, auto-fit columns
+    gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
+    gap: '25px', // Spacing between cards
   },
   message: {
     fontSize: '1.2em',
-    color: '#555',
+    color: 'var(--text-color-medium)',
     textAlign: 'center',
     marginTop: '50px',
   }

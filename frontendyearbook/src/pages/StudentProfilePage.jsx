@@ -11,10 +11,7 @@ const StudentProfilePage = () => {
     const fetchStudent = async () => {
       try {
         setLoading(true);
-        // Fetching all students and taking the first one for now
-        // We can later modify this to fetch a specific student by ID
-        // or implement logic for featured/random student.
-        const response = await getStudents({ limit: 1 }); // Fetch 1 student
+        const response = await getStudents({ limit: 1 });
         if (response.data && response.data.results && response.data.results.length > 0) {
           setStudent(response.data.results[0]);
         } else {
@@ -39,35 +36,38 @@ const StudentProfilePage = () => {
     return <div style={styles.message}>Error: {error}</div>;
   }
 
-  if (!student) {
-    return <div style={styles.message}>No student to display.</div>;
-  }
+  // Removed the !student check here because StudentCard handles its own loading/null state
+  // This page could eventually display multiple students or a swipe interface
 
   return (
-    <div style={styles.container}>
+    <div style={styles.container} className="container"> {/* Using .container utility */}
       <h1 style={styles.header}>Student Profile</h1>
-      <StudentCard student={student} />
-      {/* Later, we can add navigation for swipeable cards or a list here */}
+      {student ? (
+        <StudentCard student={student} />
+      ) : (
+        <div style={styles.message}>No student to display.</div>
+      )}
+      {/* Placeholder for swipe navigation or list view */}
     </div>
   );
 };
 
 const styles = {
-  container: {
-    padding: '20px',
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'center',
-    backgroundColor: '#f4f7f6', // Light background for the page
-  },
+  // container: { // .container utility class handles padding and max-width
+  //   // display: 'flex', // Not necessarily flex for a single centered card
+  //   // flexDirection: 'column',
+  //   // alignItems: 'center',
+  // },
   header: {
-    color: '#333',
-    marginBottom: '20px',
-    fontFamily: "'Georgia', serif", // Example of a more "nostalgic" font
+    textAlign: 'center',
+    color: 'var(--primary-color)',
+    marginBottom: '30px', // Increased margin
+    fontSize: '2.5em', // Consistent with other page headers
+    fontFamily: 'var(--font-family-serif)',
   },
   message: {
     fontSize: '1.2em',
-    color: '#555',
+    color: 'var(--text-color-medium)',
     textAlign: 'center',
     marginTop: '50px',
   }
