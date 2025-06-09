@@ -41,6 +41,7 @@ INSTALLED_APPS = [
     'rest_framework',
     'corsheaders', 
     'yearbook',
+    'django_filters',
 ]
 
 CORS_ALLOW_ALL_ORIGINS = ['http://localhost:5173/']

@@ -18,7 +18,7 @@ const PresidentMessagePage = () => {
           // If the API returns a single object directly
           setMessageData(response.data);
         } else {
-          setError('President's message not found.');
+          setError("President's message not found.");
         }
       } catch (err) {
         console.error("Error fetching President's message:", err);

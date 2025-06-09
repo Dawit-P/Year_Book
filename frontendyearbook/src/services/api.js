@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const API_BASE_URL = 'http://localhost:8000/api'; // Assuming backend runs on port 8000
+const API_BASE_URL = 'http://127.0.0.1:8081/api'; // Assuming backend runs on port 8000
 
 const apiClient = axios.create({
   baseURL: API_BASE_URL,
@@ -21,7 +21,7 @@ const processItem = (item) => {
   const newItem = { ...item };
   for (const key in newItem) {
     if (key.endsWith('_url') && newItem[key] && !newItem[key].startsWith('http')) {
-      newItem[key] = `http://localhost:8000${newItem[key]}`;
+      newItem[key] = `http://127.0.0.1:8081${newItem[key]}`;
     }
     // Recursively process nested objects (e.g., department within student)
     if (typeof newItem[key] === 'object' && newItem[key] !== null) {
