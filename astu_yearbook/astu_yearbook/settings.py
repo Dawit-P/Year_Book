@@ -26,7 +26,9 @@ SECRET_KEY = 'django-insecure-p7+&v=hjlgukv_c1njgzqz(!0)to=6gm^h2s%p@c_udoc+11*5
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['*']
+
+# ALLOWED_HOSTS = ['127.0.0.1', 'localhost']
 
 
 # Application definition
@@ -44,17 +46,18 @@ INSTALLED_APPS = [
     'django_filters',
 ]
 
-CORS_ALLOW_ALL_ORIGINS = ['http://localhost:5173/']
+# CORS_ALLOW_ALL_ORIGINS = ['http://localhost:5173/']
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
+    'corsheaders.middleware.CorsMiddleware', 
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    'corsheaders.middleware.CorsMiddleware', 
+    
 ]
 
 ROOT_URLCONF = 'astu_yearbook.urls'
@@ -135,6 +138,10 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 # CORS settings (for development)
 CORS_ALLOW_ALL_ORIGINS = True
+
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:5173",
+]
 
 # REST Framework settings
 REST_FRAMEWORK = {
