@@ -55,36 +55,48 @@ export async function getDepartmentStats() {
 
 // Students API calls
 
-export async function getStudents() {
-  return apiRequest("/students")
+export async function getStudents(params?: {
+  department?: number;
+  is_featured?: boolean;
+  search?: string;
+  page?: number
+}) {
+  const searchParams = new URLSearchParams()
+  if (params) {
+    Object.entries(params).forEach(([key, value]) => {
+      if (value !== undefined && value !== null) searchParams.append(key, String(value));
+    });
+  }
+  const queryString = searchParams.toString();
+  return apiRequest(`/students${queryString ? `/?${queryString}` : "/"}`);
 }
 
 export async function getFeaturedStudents() {
-  return apiRequest("/students")
+  return apiRequest("/students/?is_featured=true");
 }
 
 export async function getStudentById(id: number) {
-  return apiRequest(`/students/${id}/`)
+  return apiRequest(`/students/${id}/`);
 }
 
 // Alumni API calls
 export async function getAlumni(params?: {
-  industry?: string
-  graduation_year?: string
-  location?: string
-  search?: string
-  page?: number
+  department?: number; // Changed from department_name, and it's an ID
+  graduation_year?: string; // Kept, assuming string is fine for year
+  search?: string;
+  page?: number;
+  // industry and location removed
 }) {
   const searchParams = new URLSearchParams()
 
   if (params) {
     Object.entries(params).forEach(([key, value]) => {
-      if (value) searchParams.append(key, value.toString())
+      if (value !== undefined && value !== null) searchParams.append(key, String(value));
     })
   }
 
-  const queryString = searchParams.toString()
-  return apiRequest(`/alumni/${queryString ? `?${queryString}` : ""}`)
+  const queryString = searchParams.toString();
+  return apiRequest(`/alumni${queryString ? `/?${queryString}` : "/"}`);
 }
 
 export async function getFeaturedAlumni() {
@@ -118,21 +130,26 @@ export async function submitFacultyTribute(tribute: {
 
 // Memory Board API calls
 export async function getMemories(params?: {
-  category?: string
-  year?: string
-  search?: string
-  page?: number
+  memory_type?: string; // Changed from category
+  department?: number; // Added department filter
+  search?: string;
+  page?: number;
+  // year filter removed as not directly supported by backend field memory_type or department
 }) {
   const searchParams = new URLSearchParams()
 
   if (params) {
     Object.entries(params).forEach(([key, value]) => {
-      if (value) searchParams.append(key, value.toString())
+      if (value !== undefined && value !== null) searchParams.append(key, String(value));
     })
   }
 
-  const queryString = searchParams.toString()
-  return apiRequest(`/memories/${queryString ? `?${queryString}` : ""}`)
+  const queryString = searchParams.toString();
+  return apiRequest(`/memories${queryString ? `/?${queryString}` : "/"}`);
+}
+
+export async function getAlumniById(id: number) {
+  return apiRequest(`/alumni/${id}/`);
 }
 
 export async function submitMemory(memory: {

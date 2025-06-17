@@ -2,6 +2,16 @@
 from rest_framework import serializers
 from .models import *
 
+class ProfileImageSerializer(serializers.ModelSerializer):
+    image_url = serializers.SerializerMethodField()
+
+    class Meta:
+        model = ProfileImage
+        fields = ['image_url', 'caption']
+
+    def get_image_url(self, obj):
+        return obj.image.url if obj.image else None
+
 class DepartmentSerializer(serializers.ModelSerializer):
     student_count = serializers.SerializerMethodField()
     
@@ -15,10 +25,11 @@ class DepartmentSerializer(serializers.ModelSerializer):
 class StudentSerializer(serializers.ModelSerializer):
     department_name = serializers.CharField(source='department.name', read_only=True)
     photo_url = serializers.SerializerMethodField()
+    profile_images = ProfileImageSerializer(many=True, read_only=True, source='profile_images')
     
     class Meta:
         model = Student
-        fields = '__all__'
+        fields = ['id', 'name', 'department', 'department_name', 'photo_url', 'quote', 'last_words', 'highlight_tagline', 'description', 'is_featured', 'created_at', 'updated_at', 'my_story', 'profile_images']
         
     def get_photo_url(self, obj):
         return obj.photo.url if obj.photo else None
@@ -28,7 +39,7 @@ class FacultyTributeSerializer(serializers.ModelSerializer):
     
     class Meta:
         model = FacultyTribute
-        fields = '__all__'
+        fields = ['id', 'name', 'photo_url', 'message', 'position', 'order', 'department_name', 'years_of_service', 'specialization']
         
     def get_photo_url(self, obj):
         return obj.photo.url if obj.photo else None
@@ -53,7 +64,7 @@ class MemoryBoardSerializer(serializers.ModelSerializer):
     
     class Meta:
         model = MemoryBoard
-        fields = '__all__'
+        fields = ['id', 'title', 'photo_url', 'caption', 'department', 'department_name', 'memory_type', 'created_at', 'author_name', 'author_program', 'author_year']
         
     def get_photo_url(self, obj):
         return obj.photo.url if obj.photo else None
@@ -61,10 +72,11 @@ class MemoryBoardSerializer(serializers.ModelSerializer):
 class AlumniHighlightSerializer(serializers.ModelSerializer):
     photo_url = serializers.SerializerMethodField()
     department_name = serializers.CharField(source='department.name', read_only=True)
+    profile_images = ProfileImageSerializer(many=True, read_only=True, source='profile_images')
     
     class Meta:
         model = AlumniHighlight
-        fields = '__all__'
+        fields = ['id', 'name', 'photo_url', 'bio', 'achievement', 'department', 'department_name', 'graduation_year', 'current_position', 'created_at', 'my_story', 'profile_images']
         
     def get_photo_url(self, obj):
         return obj.photo.url if obj.photo else None

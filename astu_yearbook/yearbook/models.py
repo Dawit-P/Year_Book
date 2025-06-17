@@ -31,6 +31,7 @@ class Student(models.Model):
     is_featured = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+    my_story = models.TextField(blank=True, null=True)
 
     class Meta:
         ordering = ['name']
@@ -46,6 +47,9 @@ class FacultyTribute(models.Model):
     message = models.TextField()
     position = models.CharField(max_length=100)
     order = models.PositiveIntegerField(default=0, help_text="Display order (lowest first)")
+    department_name = models.CharField(max_length=100, blank=True, null=True)
+    years_of_service = models.PositiveIntegerField(blank=True, null=True)
+    specialization = models.CharField(max_length=100, blank=True, null=True)
 
     class Meta:
         ordering = ['order', 'name']
@@ -95,6 +99,9 @@ class MemoryBoard(models.Model):
         help_text="Category for grouping memories"
     )
     created_at = models.DateTimeField(auto_now_add=True)
+    author_name = models.CharField(max_length=100, blank=True, null=True)
+    author_program = models.CharField(max_length=100, blank=True, null=True)
+    author_year = models.CharField(max_length=20, blank=True, null=True)
 
     class Meta:
         ordering = ['-created_at']
@@ -117,6 +124,7 @@ class AlumniHighlight(models.Model):
     graduation_year = models.PositiveIntegerField()
     current_position = models.CharField(max_length=150)
     created_at = models.DateTimeField(auto_now_add=True)
+    my_story = models.TextField(blank=True, null=True)
 
     class Meta:
         ordering = ['-graduation_year']
@@ -146,3 +154,16 @@ class AboutASTU(models.Model):
         # Ensure only one instance exists
         self.pk = 1
         super().save(*args, **kwargs)
+
+class ProfileImage(models.Model):
+    image = models.ImageField(upload_to='profile_images/')
+    student = models.ForeignKey(Student, on_delete=models.CASCADE, null=True, blank=True, related_name='profile_images')
+    alumni = models.ForeignKey(AlumniHighlight, on_delete=models.CASCADE, null=True, blank=True, related_name='profile_images')
+    caption = models.CharField(max_length=255, blank=True, null=True)
+
+    def __str__(self):
+        if self.student:
+            return f"Image for {self.student.name}"
+        elif self.alumni:
+            return f"Image for {self.alumni.name}"
+        return "Profile Image"

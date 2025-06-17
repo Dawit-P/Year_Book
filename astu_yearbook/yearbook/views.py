@@ -47,8 +47,9 @@ class MemoryBoardViewSet(viewsets.ModelViewSet):
     queryset = MemoryBoard.objects.select_related('department').all()
     serializer_class = MemoryBoardSerializer
     pagination_class = SmallResultsPagination
-    filter_backends = [DjangoFilterBackend]
+    filter_backends = [DjangoFilterBackend, filters.SearchFilter]
     filterset_fields = ['department', 'memory_type']
+    search_fields = ['title', 'caption', 'author_name', 'author_program', 'author_year']
 
 class AlumniHighlightViewSet(viewsets.ModelViewSet):
     queryset = AlumniHighlight.objects.select_related('department').all()

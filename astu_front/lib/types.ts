@@ -1,5 +1,10 @@
 // TypeScript interfaces for Django REST API data structures
 
+export interface ProfileImage {
+  image_url: string;
+  caption?: string;
+}
+
 export interface University {
   id: number
   name: string
@@ -44,34 +49,35 @@ export interface Department {
 }
 
 export interface Student {
-  id: number
-  name: string
-  program: string
-  year: string
-  gpa: number
-  achievements: string[]
-  hometown: string
-  image: string
-  bio: string
-  graduation_year: number
-  email?: string
-  linkedin?: string
+  id: number;
+  name: string;
+  department_name: string;
+  photo_url: string;
+  quote: string;
+  last_words: string;
+  highlight_tagline: string;
+  description: string;
+  is_featured: boolean;
+  department: number; // This is the department ID
+  created_at: string;
+  updated_at: string;
+  my_story?: string;
+  profile_images?: ProfileImage[];
 }
 
-export interface Alumni {
-  id: number
-  name: string
-  graduation_year: number
-  program: string
-  current_position: string
-  company: string
-  location: string
-  achievements: string[]
-  image: string
-  bio: string
-  linkedin?: string
-  industry: string
-  email?: string
+export interface AlumniHighlight {
+  id: number;
+  name: string;
+  graduation_year: number;
+  department_name: string;
+  current_position: string;
+  achievement: string;
+  photo_url: string;
+  bio: string;
+  department: number; // This is the department ID
+  created_at: string;
+  my_story?: string;
+  profile_images?: ProfileImage[];
 }
 
 export interface AlumniStats {
@@ -82,34 +88,29 @@ export interface AlumniStats {
 }
 
 export interface FacultyTribute {
-  id: number
-  name: string
-  title: string
-  department: string
-  years_of_service: number
-  specialization: string
-  image: string
-  tribute: string
-  achievements: string[]
-  courses_taught: string[]
-  student_testimonial: string
-  submitted_by: string
-  submission_date: string
+  id: number;
+  name: string;
+  position: string;
+  photo_url: string;
+  message: string;
+  order?: number;
+  department_name?: string;
+  years_of_service?: number;
+  specialization?: string;
 }
 
-export interface Memory {
-  id: number
-  title: string
-  content: string
-  author: string
-  author_program: string
-  author_year: string
-  date_posted: string
-  category: string
-  image?: string
-  likes: number
-  comments: number
-  tags: string[]
+export interface Memory { // For MemoryBoard
+  id: number;
+  title: string;
+  caption: string;
+  author_name?: string;
+  author_program?: string;
+  author_year?: string;
+  created_at: string;
+  memory_type: string;
+  photo_url?: string;
+  department?: number; // This is the department ID
+  department_name?: string;
 }
 
 export interface MemoryComment {
@@ -176,23 +177,24 @@ export interface TributeFormData {
 
 // Filter types
 export interface StudentFilters {
-  program?: string
-  year?: string
-  search?: string
-  page?: number
+  department_name?: string; // Changed from program
+  year?: string;
+  search?: string;
+  page?: number;
 }
 
 export interface AlumniFilters {
-  industry?: string
-  graduation_year?: string
-  location?: string
-  search?: string
-  page?: number
+  department_name?: string; // Added to reflect change from program
+  graduation_year?: string;
+  // industry?: string; // Removed
+  // location?: string; // Removed
+  search?: string;
+  page?: number;
 }
 
 export interface MemoryFilters {
-  category?: string
-  year?: string
-  search?: string
-  page?: number
+  memory_type?: string; // Changed from category
+  year?: string;
+  search?: string;
+  page?: number;
 }
