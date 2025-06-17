@@ -3,119 +3,125 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
+"use client"
+
+import { useEffect, useState } from "react"
+import Image from "next/image"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Badge } from "@/components/ui/badge"
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Heart, MessageSquare, Calendar, User, Camera, Plus, Filter, Search } from "lucide-react"
+import { Calendar, User, Camera, Plus, Filter, Search, GraduationCap, MessageSquare } from "lucide-react"
 
-// JSON data structure from Django REST API
-const memoryBoardData = {
-  memories: [
-    {
-      id: 1,
-      title: "First Day at ASTU",
-      content:
-        "I still remember walking through the gates of ASTU for the first time. The excitement, nervousness, and hope all mixed together. Little did I know this place would become my second home and shape who I am today.",
-      author: "Hanan Mohammed",
-      author_program: "Computer Science",
-      author_year: "Class of 2024",
-      date_posted: "2024-01-15",
-      category: "Campus Life",
-      image: "/placeholder.svg?height=300&width=400",
-      likes: 45,
-      comments: 12,
-      tags: ["freshman", "campus", "memories"],
-    },
-    {
-      id: 2,
-      title: "Late Night Lab Sessions",
-      content:
-        "Those countless hours in the engineering lab, debugging code until 3 AM with my project partners. We complained then, but now I miss those moments of discovery and friendship forged through shared struggles.",
-      author: "Daniel Tadesse",
-      author_program: "Electrical Engineering",
-      author_year: "Class of 2025",
-      date_posted: "2024-01-18",
-      category: "Academic",
-      image: "/placeholder.svg?height=300&width=400",
-      likes: 38,
-      comments: 8,
-      tags: ["lab", "teamwork", "engineering"],
-    },
-    {
-      id: 3,
-      title: "Graduation Day Joy",
-      content:
-        "The moment I walked across that stage and received my diploma, I felt the weight of four years of hard work and the excitement for what's ahead. Thank you ASTU for this incredible journey!",
-      author: "Meron Bekele",
-      author_program: "Chemical Engineering",
-      author_year: "Class of 2023",
-      date_posted: "2024-01-20",
-      category: "Graduation",
-      image: "/placeholder.svg?height=300&width=400",
-      likes: 67,
-      comments: 23,
-      tags: ["graduation", "achievement", "celebration"],
-    },
-    {
-      id: 4,
-      title: "Cultural Festival Magic",
-      content:
-        "The annual cultural festival where students from all backgrounds came together to celebrate our diversity. The music, food, and friendships made that day will forever be etched in my heart.",
-      author: "Samuel Girma",
-      author_program: "Mechanical Engineering",
-      author_year: "Class of 2026",
-      date_posted: "2024-01-22",
-      category: "Events",
-      image: "/placeholder.svg?height=300&width=400",
-      likes: 52,
-      comments: 15,
-      tags: ["culture", "festival", "diversity"],
-    },
-    {
-      id: 5,
-      title: "Professor's Life Lesson",
-      content:
-        "Dr. Alemayehu once told us, 'Technology is not just about code, it's about solving human problems.' That simple statement changed my entire perspective on what it means to be an engineer.",
-      author: "Rahel Hailu",
-      author_program: "Applied Mathematics",
-      author_year: "Class of 2024",
-      date_posted: "2024-01-25",
-      category: "Inspiration",
-      image: "/placeholder.svg?height=300&width=400",
-      likes: 41,
-      comments: 9,
-      tags: ["wisdom", "professor", "inspiration"],
-    },
-    {
-      id: 6,
-      title: "Study Group Adventures",
-      content:
-        "Our study group that started as academic necessity became a lifelong friendship. From cramming for exams to celebrating successes, we did it all together. ASTU gave us more than education—it gave us family.",
-      author: "Yonas Tesfaye",
-      author_program: "Civil Engineering",
-      author_year: "Class of 2025",
-      date_posted: "2024-01-28",
-      category: "Friendship",
-      image: "/placeholder.svg?height=300&width=400",
-      likes: 59,
-      comments: 18,
-      tags: ["friendship", "study", "support"],
-    },
-  ],
-  categories: [
-    "All Categories",
-    "Campus Life",
-    "Academic",
-    "Graduation",
-    "Events",
-    "Inspiration",
-    "Friendship",
-    "Sports",
-    "Clubs",
-  ],
-  years: ["All Years", "2024", "2023", "2022", "2021", "2020"],
-}
+import { getMemories, getDepartments } from "@/lib/api"
+import { Memory, Department } from "@/lib/types"
+
+// MEMORY_TYPES from backend model:
+// MEMORY_TYPES = [ ('GRAD', 'Graduation'), ('PARTY', 'Party'), ('STUDY', 'Study Session'), ('SPORT', 'Sports Event'), ('OTHER', 'Other'), ]
+const MEMORY_TYPES = [
+  { value: "ALL", label: "All Categories" },
+  { value: "GRAD", label: "Graduation" },
+  { value: "PARTY", label: "Party" },
+  { value: "STUDY", label: "Study Session" },
+  { value: "SPORT", label: "Sports Event" },
+  { value: "OTHER", label: "Other" },
+]
+
 
 export default function MemoryBoardPage() {
+  const [memories, setMemories] = useState<Memory[]>([])
+  const [departments, setDepartments] = useState<Department[]>([])
+  const [loading, setLoading] = useState(true)
+  const [searchTerm, setSearchTerm] = useState("")
+  const [selectedMemoryType, setSelectedMemoryType] = useState<string | undefined>(undefined)
+  const [selectedDepartment, setSelectedDepartment] = useState<string | undefined>(undefined)
+  const [nextPageUrl, setNextPageUrl] = useState<string | null>(null)
+  const [currentPage, setCurrentPage] = useState<number>(1)
+  const [loadingMore, setLoadingMore] = useState(false)
+
+  // Fetch departments for filter
+  useEffect(() => {
+    async function fetchDepartments() {
+      try {
+        const data = await getDepartments()
+        setDepartments(data.results || [])
+      } catch (error)_ {
+        console.error("Failed to fetch departments:", error)
+      }
+    }
+    fetchDepartments()
+  }, [])
+
+  // Fetch memories
+  useEffect(() => {
+    async function fetchMemoriesData(pageToFetch = 1, append = false) {
+      if (!append) {
+        setLoading(true);
+        setMemories([]); // Clear memories on filter change
+        setCurrentPage(1);
+      } else {
+        setLoadingMore(true);
+      }
+
+      try {
+        const params: { memory_type?: string; department?: number; search?: string; page?: number } = { page: pageToFetch };
+        if (selectedMemoryType && selectedMemoryType !== "ALL") {
+          params.memory_type = selectedMemoryType;
+        }
+        if (selectedDepartment && selectedDepartment !== "all") {
+          params.department = parseInt(selectedDepartment, 10);
+        }
+        if (searchTerm) {
+          params.search = searchTerm;
+        }
+        const data = await getMemories(params);
+        if (append) {
+          setMemories(prevMemories => [...prevMemories, ...(data.results || [])]);
+        } else {
+          setMemories(data.results || []);
+        }
+        setNextPageUrl(data.next || null);
+      } catch (error) {
+        console.error("Failed to fetch memories:", error);
+        if (!append) setMemories([]);
+      } finally {
+        if (!append) setLoading(false);
+        setLoadingMore(false);
+      }
+    }
+    fetchMemoriesData(1, false); // Initial fetch or filter change
+  }, [searchTerm, selectedMemoryType, selectedDepartment]);
+
+  const handleLoadMore = async () => {
+    if (nextPageUrl && !loadingMore) {
+      const nextPageNum = currentPage + 1;
+      setCurrentPage(nextPageNum);
+
+      setLoadingMore(true);
+      try {
+        const params: { memory_type?: string; department?: number; search?: string; page?: number } = { page: nextPageNum };
+         if (selectedMemoryType && selectedMemoryType !== "ALL") {
+          params.memory_type = selectedMemoryType;
+        }
+        if (selectedDepartment && selectedDepartment !== "all") {
+          params.department = parseInt(selectedDepartment, 10);
+        }
+        if (searchTerm) {
+          params.search = searchTerm;
+        }
+        const data = await getMemories(params);
+        setMemories(prevMemories => [...prevMemories, ...(data.results || [])]);
+        setNextPageUrl(data.next || null);
+      } catch (error) {
+        console.error("Failed to load more memories:", error);
+      } finally {
+        setLoadingMore(false);
+      }
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
@@ -130,13 +136,13 @@ export default function MemoryBoardPage() {
       </div>
 
       <div className="container mx-auto px-4 py-12">
-        {/* Add Memory Section */}
+        {/* Add Memory Section (UI only, no functionality for now) */}
         <div className="bg-white rounded-lg shadow-lg p-6 mb-12">
           <div className="flex items-center gap-3 mb-6">
             <Plus className="h-6 w-6 text-blue-500" />
             <h2 className="text-xl font-bold text-gray-900">Share Your Memory</h2>
           </div>
-
+          {/* Form elements remain for UI, but are not wired up */}
           <div className="grid md:grid-cols-2 gap-6">
             <div className="space-y-4">
               <Input placeholder="Memory title..." />
@@ -147,9 +153,9 @@ export default function MemoryBoardPage() {
                     <SelectValue placeholder="Category" />
                   </SelectTrigger>
                   <SelectContent>
-                    {memoryBoardData.categories.slice(1).map((category) => (
-                      <SelectItem key={category} value={category.toLowerCase().replace(/\s+/g, "-")}>
-                        {category}
+                    {MEMORY_TYPES.slice(1).map((type) => (
+                      <SelectItem key={type.value} value={type.value}>
+                        {type.label}
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -167,7 +173,6 @@ export default function MemoryBoardPage() {
               </div>
             </div>
           </div>
-
           <div className="flex justify-end mt-6">
             <Button className="px-8">Share Memory</Button>
           </div>
@@ -175,111 +180,111 @@ export default function MemoryBoardPage() {
 
         {/* Filter Section */}
         <div className="bg-white rounded-lg shadow-lg p-6 mb-8">
-          <div className="flex flex-col md:flex-row gap-4">
+          <div className="grid md:grid-cols-3 gap-4"> {/* Changed to 3 columns */}
             <div className="flex-1 relative">
               <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
-              <Input placeholder="Search memories..." className="pl-10" />
+              <Input
+                placeholder="Search memories..."
+                className="pl-10"
+                value={searchTerm}
+                onChange={(e) => {setSearchTerm(e.target.value); setCurrentPage(1);}}
+              />
             </div>
-            <Select>
-              <SelectTrigger className="w-full md:w-48">
+            <Select
+              onValueChange={(value) => {setSelectedMemoryType(value === "ALL" ? undefined : value); setCurrentPage(1);}}
+              value={selectedMemoryType || "ALL"}
+            >
+              <SelectTrigger className="w-full md:w-auto">
                 <Filter className="h-4 w-4 mr-2" />
                 <SelectValue placeholder="Category" />
               </SelectTrigger>
               <SelectContent>
-                {memoryBoardData.categories.map((category) => (
-                  <SelectItem key={category} value={category.toLowerCase().replace(/\s+/g, "-")}>
-                    {category}
+                {MEMORY_TYPES.map((type) => (
+                  <SelectItem key={type.value} value={type.value}>
+                    {type.label}
                   </SelectItem>
                 ))}
               </SelectContent>
             </Select>
-            <Select>
-              <SelectTrigger className="w-full md:w-48">
-                <SelectValue placeholder="Year" />
+            <Select
+              onValueChange={(value) => {setSelectedDepartment(value === "all" ? undefined : value); setCurrentPage(1);}}
+              value={selectedDepartment || "all"}
+            >
+              <SelectTrigger className="w-full md:w-auto">
+                 <GraduationCap className="h-4 w-4 mr-2" /> {/* Changed Icon */}
+                <SelectValue placeholder="Department" />
               </SelectTrigger>
               <SelectContent>
-                {memoryBoardData.years.map((year) => (
-                  <SelectItem key={year} value={year.toLowerCase()}>
-                    {year}
+                <SelectItem value="all">All Departments</SelectItem>
+                {departments.map((dept) => (
+                  <SelectItem key={dept.id} value={dept.id.toString()}>
+                    {dept.name}
                   </SelectItem>
                 ))}
               </SelectContent>
             </Select>
+            {/* Year filter removed, Department filter added */}
           </div>
         </div>
 
         {/* Memories Grid */}
+        {loading && memories.length === 0 && <div className="text-center text-gray-600 py-8">Loading memories...</div>}
+        {!loading && memories.length === 0 && (
+          <div className="text-center text-gray-600 py-8">No memories found matching your criteria.</div>
+        )}
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {memoryBoardData.memories.map((memory) => (
+          {memories.map((memory) => (
             <Card
               key={memory.id}
-              className="border-0 shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden"
+              className="border-0 shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden flex flex-col"
             >
-              {memory.image && (
+              {memory.photo_url && (
                 <div className="relative">
                   <Image
-                    src={memory.image || "/placeholder.svg"}
-                    alt={memory.title}
+                    src={memory.photo_url || "/placeholder.svg"} // Use photo_url
+                    alt={memory.title || "Memory image"}
                     width={400}
                     height={300}
                     className="w-full h-48 object-cover"
                   />
-                  <Badge className="absolute top-4 left-4 bg-white text-gray-900">{memory.category}</Badge>
+                  {memory.memory_type && (
+                    <Badge className="absolute top-4 left-4 bg-white text-gray-900">
+                      {MEMORY_TYPES.find(mt => mt.value === memory.memory_type)?.label || memory.memory_type}
+                    </Badge>
+                  )}
                 </div>
               )}
 
-              <CardHeader>
-                <CardTitle className="text-lg font-bold text-gray-900 leading-tight">{memory.title}</CardTitle>
-                <div className="flex items-center gap-2 text-sm text-gray-600">
-                  <User className="h-4 w-4" />
-                  <span>{memory.author}</span>
-                  <span>•</span>
-                  <span>{memory.author_program}</span>
-                </div>
+              <CardHeader className="pb-3"> {/* Increased padding bottom slightly */}
+                <CardTitle className="text-xl font-bold text-gray-900 leading-tight">{memory.title}</CardTitle> {/* Matched student card title size */}
+                {(memory.author_name || memory.author_program || memory.department_name) && (
+                  <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-sm text-gray-600 pt-1"> {/* Matched student card secondary info size */}
+                    {memory.author_name && <span className="flex items-center"><User className="h-4 w-4 mr-1" />{memory.author_name}</span>}
+                    {memory.author_program && memory.author_name && <span className="font-semibold">·</span>}
+                    {memory.author_program && <span>{memory.author_program} {memory.author_year && `(${memory.author_year})`}</span>}
+                    {/* Display department if no author info, or as additional info if desired */}
+                    {memory.department_name && (!memory.author_name || !memory.author_program) && <span className="flex items-center"><GraduationCap className="h-4 w-4 mr-1" />{memory.department_name}</span>}
+                  </div>
+                )}
               </CardHeader>
 
-              <CardContent className="space-y-4">
-                <CardDescription className="text-gray-700 leading-relaxed line-clamp-4">
-                  {memory.content}
-                </CardDescription>
+              <CardContent className="space-y-3 flex-grow flex flex-col justify-between pt-0"> {/* Removed CardHeader's pb and CardContent's pt for tighter coupling */}
+                {memory.caption && (
+                  <CardDescription className="text-gray-600 italic leading-relaxed line-clamp-4"> {/* Matched student card quote style */}
+                    {memory.caption}
+                  </CardDescription>
+                )}
 
-                {/* Tags */}
-                <div className="flex flex-wrap gap-2">
-                  {memory.tags.map((tag, index) => (
-                    <Badge key={index} variant="secondary" className="text-xs">
-                      #{tag}
-                    </Badge>
-                  ))}
-                </div>
-
-                {/* Engagement Stats */}
-                <div className="flex items-center justify-between pt-2 border-t">
-                  <div className="flex items-center gap-4 text-sm text-gray-600">
-                    <div className="flex items-center gap-1">
-                      <Heart className="h-4 w-4" />
-                      {memory.likes}
+                {/* Engagement Stats and Action Buttons removed as fields not in type */}
+                <div className="pt-3 mt-auto border-t flex items-center justify-end"> {/* Added mt-auto to push to bottom */}
+                  {memory.created_at && (
+                    <div className="flex items-center gap-1 text-sm text-gray-500"> {/* Matched font size */}
+                      <Calendar className="h-4 w-4" /> {/* Matched icon size */}
+                      {new Date(memory.created_at).toLocaleDateString()}
                     </div>
-                    <div className="flex items-center gap-1">
-                      <MessageSquare className="h-4 w-4" />
-                      {memory.comments}
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-1 text-xs text-gray-500">
-                    <Calendar className="h-3 w-3" />
-                    {new Date(memory.date_posted).toLocaleDateString()}
-                  </div>
+                  )}
                 </div>
-
-                {/* Action Buttons */}
-                <div className="flex gap-2">
-                  <Button variant="outline" size="sm" className="flex-1">
-                    <Heart className="h-4 w-4 mr-1" />
-                    Like
-                  </Button>
-                  <Button variant="outline" size="sm" className="flex-1">
-                    <MessageSquare className="h-4 w-4 mr-1" />
-                    Comment
-                  </Button>
+                {/* Like/Comment buttons removed */}
                 </div>
               </CardContent>
             </Card>
@@ -287,11 +292,13 @@ export default function MemoryBoardPage() {
         </div>
 
         {/* Load More */}
-        <div className="text-center mt-12">
-          <Button size="lg" variant="outline" className="px-8">
-            Load More Memories
-          </Button>
-        </div>
+        {nextPageUrl && (
+          <div className="text-center mt-12">
+            <Button size="lg" variant="outline" className="px-8" onClick={handleLoadMore} disabled={loadingMore}>
+              {loadingMore ? "Loading..." : "Load More Memories"}
+            </Button>
+          </div>
+        )}
 
         {/* Community Guidelines */}
         <div className="bg-blue-50 rounded-lg p-6 mt-12">

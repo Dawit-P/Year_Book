@@ -1,6 +1,7 @@
 "use client"
 
 import { useEffect, useState } from "react"
+import Link from "next/link" // Added Link import
 import Image from "next/image"
 import {
   Card,
@@ -28,40 +29,100 @@ import {
   Filter,
 } from "lucide-react"
 
-import { getFeaturedStudents } from "@/lib/api"
+import { getStudents, getDepartments } from "@/lib/api" // Updated imports
+import { Student, Department } from "@/lib/types" // Added type imports
 
 export default function StudentsPage() {
-  const [students, setStudents] = useState<any[]>([])
+  const [students, setStudents] = useState<Student[]>([])
+  const [departments, setDepartments] = useState<Department[]>([])
   const [loading, setLoading] = useState(true)
+  const [searchTerm, setSearchTerm] = useState("")
+  const [selectedDepartment, setSelectedDepartment] = useState<string | undefined>(undefined)
+  const [nextPageUrl, setNextPageUrl] = useState<string | null>(null)
+  const [currentPage, setCurrentPage] = useState<number>(1)
+  const [loadingMore, setLoadingMore] = useState(false)
 
-  const programs = [
-    "All Programs",
-    "Computer Science",
-    "Electrical Engineering",
-    "Mechanical Engineering",
-    "Civil Engineering",
-    "Chemical Engineering",
-    "Applied Mathematics",
-  ]
-
-  const graduationYears = ["All Years", "2024", "2025", "2026", "2027"]
-
+  // Fetch departments for filter
   useEffect(() => {
-    async function fetchStudents() {
+    async function fetchDepartments() {
       try {
-        const data = await getFeaturedStudents()
-        setStudents(data.results || [])
+        const data = await getDepartments()
+        setDepartments(data.results || [])
+      } catch (error) {
+        console.error("Failed to fetch departments:", error)
+      }
+    }
+    fetchDepartments()
+  }, [])
+
+  // Fetch students based on filters or page change
+  useEffect(() => {
+    async function fetchStudentsData(pageToFetch = 1, append = false) {
+      if (!append) {
+        setLoading(true)
+        setStudents([]) // Clear students when filters change
+        setCurrentPage(1)
+      } else {
+        setLoadingMore(true)
+      }
+
+      try {
+        const params: { department?: number; search?: string; is_featured?: boolean, page?: number } = { page: pageToFetch }
+        if (selectedDepartment && selectedDepartment !== "all") {
+          params.department = parseInt(selectedDepartment, 10)
+        }
+        if (searchTerm) {
+          params.search = searchTerm
+        }
+        // Default to all students unless specific filters active (is_featured could be a separate toggle later)
+
+        const data = await getStudents(params)
+        if (append) {
+          setStudents(prevStudents => [...prevStudents, ...(data.results || [])]);
+        } else {
+          setStudents(data.results || [])
+        }
+        setNextPageUrl(data.next || null)
       } catch (error) {
         console.error("Failed to fetch students:", error)
+        if (!append) setStudents([])
       } finally {
-        setLoading(false)
+        if (!append) setLoading(false)
+        setLoadingMore(false)
       }
     }
 
-    fetchStudents()
-  }, [])
+    fetchStudentsData(1, false) // Initial fetch or filter change
+  }, [searchTerm, selectedDepartment])
 
-  if (loading) {
+
+  const handleLoadMore = async () => {
+    if (nextPageUrl && !loadingMore) {
+      const nextPageNum = currentPage + 1
+      setCurrentPage(nextPageNum) // Optimistically update current page
+
+      setLoadingMore(true)
+      try {
+         const params: { department?: number; search?: string; is_featured?: boolean, page?: number } = { page: nextPageNum }
+        if (selectedDepartment && selectedDepartment !== "all") {
+          params.department = parseInt(selectedDepartment, 10)
+        }
+        if (searchTerm) {
+          params.search = searchTerm
+        }
+        const data = await getStudents(params)
+        setStudents(prevStudents => [...prevStudents, ...(data.results || [])]);
+        setNextPageUrl(data.next || null)
+      } catch (error) {
+        console.error("Failed to load more students:", error)
+        // Potentially revert currentPage if fetch fails, or show error
+      } finally {
+        setLoadingMore(false)
+      }
+    }
+  }
+
+  if (loading && students.length === 0) {
     return (
       <div className="min-h-screen flex justify-center items-center text-lg text-gray-600">
         Loading students...
@@ -85,39 +146,43 @@ export default function StudentsPage() {
           <div className="flex flex-col md:flex-row gap-4">
             <div className="flex-1 relative">
               <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
-              <Input placeholder="Search students by name..." className="pl-10" />
+              <Input
+                placeholder="Search students by name..."
+                className="pl-10"
+                value={searchTerm}
+                onChange={(e) => {setSearchTerm(e.target.value); setCurrentPage(1); /* Reset page on new search */}}
+              />
             </div>
-            <Select>
+            <Select
+              onValueChange={(value) => {setSelectedDepartment(value === "all" ? undefined : value); setCurrentPage(1);  /* Reset page on new filter */}}
+              value={selectedDepartment || "all"}
+            >
               <SelectTrigger className="w-full md:w-48">
                 <Filter className="h-4 w-4 mr-2" />
-                <SelectValue placeholder="Program" />
+                <SelectValue placeholder="Department" />
               </SelectTrigger>
               <SelectContent>
-                {programs.map((program) => (
-                  <SelectItem key={program} value={program.toLowerCase().replace(/\s+/g, "-")}>
-                    {program}
+                <SelectItem value="all">All Departments</SelectItem>
+                {departments.map((dept) => (
+                  <SelectItem key={dept.id} value={dept.id.toString()}>
+                    {dept.name}
                   </SelectItem>
                 ))}
               </SelectContent>
             </Select>
-            <Select>
-              <SelectTrigger className="w-full md:w-48">
-                <SelectValue placeholder="Graduation Year" />
-              </SelectTrigger>
-              <SelectContent>
-                {graduationYears.map((year) => (
-                  <SelectItem key={year} value={year.toLowerCase()}>
-                    {year}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            {/* Graduation Year filter removed */}
           </div>
         </div>
 
-        {/* Featured Students */}
+        {/* Students List */}
         <div className="mb-12">
-          <h2 className="text-2xl font-bold text-gray-900 mb-8">Featured Students</h2>
+          <h2 className="text-2xl font-bold text-gray-900 mb-8">
+            {selectedDepartment || searchTerm ? "Search Results" : "All Students"}
+          </h2>
+          {loading && students.length === 0 && <div className="text-center text-gray-600">Loading...</div>}
+          {!loading && students.length === 0 && (
+            <div className="text-center text-gray-600">No students found.</div>
+          )}
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
             {students.map((student) => (
               <Card
@@ -126,15 +191,17 @@ export default function StudentsPage() {
               >
                 <div className="relative">
                   <Image
-                    src={student.photo || "/placeholder.svg"}
+                    src={student.photo_url || "/placeholder.svg"}
                     alt={student.name}
                     width={300}
                     height={300}
                     className="w-full h-64 object-cover"
                   />
-                  <div className="absolute top-4 right-4">
-                    <Badge className="bg-white text-gray-900">Featured</Badge>
-                  </div>
+                  {student.is_featured && (
+                    <div className="absolute top-4 right-4">
+                      <Badge className="bg-white text-gray-900">Featured</Badge>
+                    </div>
+                  )}
                 </div>
 
                 <CardHeader>
@@ -142,36 +209,53 @@ export default function StudentsPage() {
                   <div className="text-sm text-gray-600">
                     <div className="flex items-center gap-1">
                       <GraduationCap className="h-4 w-4" />
-                      {student.department_name}
+                      {student.department_name || student.department?.toString()}
                     </div>
                   </div>
                 </CardHeader>
 
                 <CardContent className="space-y-4">
-                  <CardDescription className="text-gray-600 italic">
-                    “{student.quote}”
-                  </CardDescription>
+                  {student.quote && (
+                    <CardDescription className="text-gray-600 italic">
+                      “{student.quote}”
+                    </CardDescription>
+                  )}
 
-                  <div>
-                    <h4 className="font-semibold text-gray-900 mb-1 flex items-center gap-2">
-                      <Award className="h-4 w-4 text-yellow-500" />
-                      Highlight
-                    </h4>
-                    <p className="text-sm text-gray-700">{student.highlight_tagline}</p>
-                  </div>
+                  {student.highlight_tagline && (
+                    <div>
+                      <h4 className="font-semibold text-gray-900 mb-1 flex items-center gap-2">
+                        <Award className="h-4 w-4 text-yellow-500" />
+                        Highlight
+                      </h4>
+                      <p className="text-sm text-gray-700">{student.highlight_tagline}</p>
+                    </div>
+                  )}
 
-                  <div>
-                    <h4 className="font-semibold text-gray-900 mb-1">Farewell Words</h4>
-                    <p className="text-sm text-gray-600">{student.last_words}</p>
-                  </div>
+                  {student.my_story && (
+                     <div>
+                       <h4 className="font-semibold text-gray-900 mb-1">My Story</h4>
+                       <p className="text-sm text-gray-600 line-clamp-3">{student.my_story}</p>
+                     </div>
+                  )}
 
-                  <div className="text-sm text-gray-600">
-                    <strong>Memories:</strong> {student.description}
-                  </div>
+                  {student.last_words && (
+                    <div>
+                      <h4 className="font-semibold text-gray-900 mb-1">Farewell Words</h4>
+                      <p className="text-sm text-gray-600 line-clamp-3">{student.last_words}</p>
+                    </div>
+                  )}
 
-                  <Button className="w-full" variant="outline">
-                    View Profile
-                  </Button>
+                  {student.description && (
+                    <div className="text-sm text-gray-600">
+                      <strong>Description:</strong> {student.description}
+                    </div>
+                  )}
+
+                  <Link href={`/students/${student.id}`} passHref>
+                    <Button className="w-full mt-2" variant="outline">
+                      View Profile
+                    </Button>
+                  </Link>
                 </CardContent>
               </Card>
             ))}
@@ -179,11 +263,13 @@ export default function StudentsPage() {
         </div>
 
         {/* Load More Button */}
-        <div className="text-center">
-          <Button size="lg" className="px-8">
-            Load More Students
-          </Button>
-        </div>
+        {nextPageUrl && (
+          <div className="text-center">
+            <Button size="lg" className="px-8" onClick={handleLoadMore} disabled={loadingMore}>
+              {loadingMore ? "Loading..." : "Load More Students"}
+            </Button>
+          </div>
+        )}
       </div>
     </div>
   )
